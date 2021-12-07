@@ -18,7 +18,7 @@ contract LinkKey is ERC20,Ownable,Pausable {
     address public teamCollectAddress;
     address public investorCollectAddress;
 
-    uint256 public immutable totalShare = 100;
+    uint256 public totalShare;
     uint256 public userShare;
     uint256 public teamShare;
     uint256 public investorShare;
@@ -41,6 +41,7 @@ contract LinkKey is ERC20,Ownable,Pausable {
         userShare = userShare_;
         teamShare = teamShare_;
         investorShare = investorShare_;
+        setTotalShare();
 
         releaseAmount = releaseAmount_;
     }
@@ -58,25 +59,32 @@ contract LinkKey is ERC20,Ownable,Pausable {
     function mint() public releasing whenNotPaused{
         require(minter[_msgSender()], "mint permission denied.");
 
-        uint256 userCollectToken = releaseAmount.mul(userShare.div(totalShare));
-        uint256 teamCollectToken = releaseAmount.mul(teamShare.div(totalShare));
-        uint256 investorCollectToken = releaseAmount.mul(investorShare.div(totalShare));
+        uint256 userCollectToken = releaseAmount.mul(1 ether).mul(userShare).div(totalShare);
+        uint256 teamCollectToken = releaseAmount.mul(1 ether).mul(teamShare).div(totalShare);
+        uint256 investorCollectToken = releaseAmount.mul(1 ether).mul(investorShare).div(totalShare);
 
         _mint(userCollectAddress, userCollectToken);
         _mint(teamCollectAddress, teamCollectToken);
         _mint(investorCollectAddress, investorCollectToken);
     }
 
+    function setTotalShare() internal{
+        totalShare = userShare + teamShare + investorShare;
+    }
+
     function setUserShare(uint256 userShare_) public releaseStop onlyOwner{
         userShare = userShare_;
+        setTotalShare();
     }
 
     function setTeamShare(uint256 teamShare_) public releaseStop onlyOwner{
         teamShare = teamShare_;
+        setTotalShare();
     }
 
     function setInvestorShare(uint256 investorShare_) public releaseStop onlyOwner{
         investorShare = investorShare_;
+        setTotalShare();
     }
 
     function setReleaseTime(uint64 deadline_) public releaseStop onlyOwner{
