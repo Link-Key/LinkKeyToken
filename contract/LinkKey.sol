@@ -17,11 +17,13 @@ contract LinkKey is ERC20,Ownable,Pausable {
     address public userCollectAddress;
     address public teamCollectAddress;
     address public investorCollectAddress;
+    address public bidderCollectAddress;
 
     uint256 public totalShare;
     uint256 public userShare;
     uint256 public teamShare;
     uint256 public investorShare;
+    uint256 public bidderShare;
 
     uint256 public releaseAmount;
 
@@ -29,18 +31,20 @@ contract LinkKey is ERC20,Ownable,Pausable {
 
     constructor(string memory name_, string memory symbol_,
         uint64 deadline_, address userCollectAddress_,
-        address teamCollectAddress_, address investorCollectAddress_,
-        uint256 userShare_, uint256 teamShare_, uint256 investorShare_, uint256 releaseAmount_) ERC20(name_,symbol_) Pausable(){
+        address teamCollectAddress_, address investorCollectAddress_, address bidderCollectAddress_,
+        uint256 releaseAmount_) ERC20(name_,symbol_) Pausable(){
 
         releaseTime.setDeadline(deadline_);
 
         userCollectAddress = userCollectAddress_;
         teamCollectAddress = teamCollectAddress_;
         investorCollectAddress = investorCollectAddress_;
+        bidderCollectAddress = bidderCollectAddress_;
 
-        userShare = userShare_;
-        teamShare = teamShare_;
-        investorShare = investorShare_;
+        userShare = 5;
+        teamShare = 1;
+        investorShare = 3;
+        bidderShare = 1;
         setTotalShare();
 
         releaseAmount = releaseAmount_;
@@ -62,14 +66,16 @@ contract LinkKey is ERC20,Ownable,Pausable {
         uint256 userCollectToken = releaseAmount.mul(1 ether).mul(userShare).div(totalShare);
         uint256 teamCollectToken = releaseAmount.mul(1 ether).mul(teamShare).div(totalShare);
         uint256 investorCollectToken = releaseAmount.mul(1 ether).mul(investorShare).div(totalShare);
+        uint256 bidderCollectToken = releaseAmount.mul(1 ether).mul(bidderShare).div(totalShare);
 
         _mint(userCollectAddress, userCollectToken);
         _mint(teamCollectAddress, teamCollectToken);
         _mint(investorCollectAddress, investorCollectToken);
+        _mint(bidderCollectAddress, bidderCollectToken);
     }
 
     function setTotalShare() internal{
-        totalShare = userShare + teamShare + investorShare;
+        totalShare = userShare + teamShare + investorShare +bidderShare;
     }
 
     function setUserShare(uint256 userShare_) public releaseStop onlyOwner{
@@ -87,6 +93,11 @@ contract LinkKey is ERC20,Ownable,Pausable {
         setTotalShare();
     }
 
+    function setBidderShare(uint256 bidderShare_) public releaseStop onlyOwner{
+        bidderShare = bidderShare_;
+        setTotalShare();
+    }
+
     function setReleaseTime(uint64 deadline_) public releaseStop onlyOwner{
         releaseTime.setDeadline(deadline_);
     }
@@ -101,6 +112,10 @@ contract LinkKey is ERC20,Ownable,Pausable {
 
     function setInvestorCollectAddress(address investorCollectAddress_) public onlyOwner{
         investorCollectAddress = investorCollectAddress_;
+    }
+
+    function setBidderCollectAddress(address bidderCollectAddress_) public onlyOwner{
+        bidderCollectAddress = bidderCollectAddress_;
     }
 
     function setMinter(address minter_) public onlyOwner{
