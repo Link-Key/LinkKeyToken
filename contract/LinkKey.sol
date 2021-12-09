@@ -60,8 +60,10 @@ contract LinkKey is ERC20,Ownable,Pausable {
         _;
     }
 
-    function mint() public releasing whenNotPaused{
-        require(minter[_msgSender()], "mint permission denied.");
+    function mint() public returns(bool){
+        if( (!minter[_msgSender()]) || releaseTime.isExpired() || paused() || totalShare <= 0){
+            return false;
+        }
 
         uint256 userCollectToken = releaseAmount.mul(1 ether).mul(userShare).div(totalShare);
         uint256 teamCollectToken = releaseAmount.mul(1 ether).mul(teamShare).div(totalShare);
@@ -72,6 +74,7 @@ contract LinkKey is ERC20,Ownable,Pausable {
         _mint(teamCollectAddress, teamCollectToken);
         _mint(investorCollectAddress, investorCollectToken);
         _mint(bidderCollectAddress, bidderCollectToken);
+        return true;
     }
 
     function setTotalShare() internal{
